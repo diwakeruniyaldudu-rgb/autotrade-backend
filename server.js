@@ -17,7 +17,10 @@ app.get("/", (req, res) => {
 
 app.post("/webhook", async (req, res) => {
   try {
-
+console.log(process.env.ANGEL_CLIENT_CODE);
+console.log(process.env.ANGEL_PIN);
+console.log(process.env.ANGEL_TOTP_SECRET);
+console.log(process.env.ANGEL_API_KEY);
 const otp = authenticator.generate(process.env.ANGEL_TOTP_SECRET);
     const session = await smartApi.generateSession(
   process.env.ANGEL_CLIENT_CODE.trim(),
