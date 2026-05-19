@@ -24,7 +24,7 @@ console.log(process.env.ANGEL_API_KEY);
 const otp = authenticator.generate(process.env.ANGEL_TOTP_SECRET);
     const session = await smartApi.generateSession(
   process.env.ANGEL_CLIENT_CODE.trim(),
-  process.env.ANGEL_PIN.trim(),
+  String(process.env.ANGEL_PIN),
   otp
 );
 
@@ -36,7 +36,7 @@ if (!session.data) {
     session
   });
 }
-
+console.log(JSON.stringify(session, null, 2));
 smartApi.setAccessToken(session.data.jwtToken);
 
     const orderparams = {
