@@ -1,14 +1,15 @@
 import express from "express";
-import axios from "axios";
-import { SmartAPI } from "smartapi-javascript";
+import dotenv from "dotenv";
+import SmartAPI from "smartapi-javascript";
 import { authenticator } from "otplib";
 
-const app = express();
+dotenv.config();
 
+const app = express();
 app.use(express.json());
 
 const smartApi = new SmartAPI({
-  api_key: process.env.ANGEL_API_KEY
+  api_key: String(process.env.ANGEL_API_KEY)
 });
 
 app.get("/", (req, res) => {
@@ -17,48 +18,41 @@ app.get("/", (req, res) => {
 
 app.post("/webhook", async (req, res) => {
   try {
-const clientCode = String(process.env.ANGEL_CLIENT_CODE || "");
-const pin = String(process.env.ANGEL_PIN || "");
-const totpSecret = String(process.env.ANGEL_TOTP_SECRET || "");
 
-const otp = authenticator.generate(totpSecret);
+    const clientCode = String(process.env.ANGEL_CLIENT_CODE || "");
+    const pin = String(process.env.ANGEL_PIN || "");
+    const totpSecret = String(process.env.ANGEL_TOTP_SECRET || "");
 
-console.log(clientCode);
-console.log(pin);
-console.log(otp);
+    const otp = authenticator.generate(totpSecret);
 
-const session = await smartApi.generateSession(
- clientCode,
- pin,
- otp
-);
+    console.log("CLIENT:", clientCode);
+    console.log("PIN:", pin);
+    console.log("OTP:", otp);
 
-console.log("session", session);
+    const session = await smartApi.generateSession(
+      clientCode,
+      pin,
+      otp
+    );
 
-if (!session.data) {
-  return res.status(500).json({
-    success: false,
-    session
-  });
-}
-console.log(JSON.stringify(session, null, 2));
-smartApi.setAccessToken(session.data.jwtToken);
+    console.log(session);
+
+    smartApi.setAccessToken(session.data.jwtToken);
 
     const orderparams = {
-  variety: "NORMAL",
-  tradingsymbol: "SBIN-EQ",
-  symboltoken: "3045",
-  transactiontype: "BUY",
-  exchange: "NSE",
-  ordertype: "MARKET",
-  producttype: "INTRADAY",
-  duration: "DAY",
-  quantity: "1"
-};
+      variety: "NORMAL",
+      tradingsymbol: "SBIN-EQ",
+      symboltoken: "3045",
+      transactiontype: "BUY",
+      exchange: "NSE",
+      ordertype: "MARKET",
+      producttype: "INTRADAY",
+      duration: "DAY",
+      quantity: "1"
+    };
 
-    console.log(orderparams);
-const order = await smartApi.placeOrder(orderparams);
-console.log(order);
+    const order = await smartApi.placeOrder(orderparams);
+
     res.json({
       success: true,
       order
@@ -72,11 +66,10 @@ console.log(order);
       success: false,
       error: error.message
     });
+
   }
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+app.listen(3000, () => {
+  console.log("Server running on 3000");
 });
